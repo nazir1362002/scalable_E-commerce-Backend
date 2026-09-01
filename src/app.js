@@ -6,8 +6,18 @@ const productRoutes = require("./routes/productsRoutes");
 const app = express();
 
 // Middleware
+const errorHandler = (err, req, res, next) => {
+    console.error(err);
+
+    res.status(500).json({
+        success: false,
+        message: err.message || "Internal Server Error"
+    });
+};
+
 app.use(cors());
 app.use(express.json());
+app.use(errorHandler);
 
 // Health check
 app.get("/health", (req, res) => {
