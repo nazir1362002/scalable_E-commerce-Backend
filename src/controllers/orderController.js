@@ -59,7 +59,56 @@ const createOrder = async (req, res, next) => {
         next(error);
     }
 };
+const getMyOrders = async (req, res, next) => {
+    try {
+        const orders = await Order.find({
+            user: req.user.id
+        })
+            .populate("items.product", "name price")
+            .sort("-createdAt");
+
+        res.status(200).json({
+            success: true,
+            count: orders.length,
+            orders
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+const getOrderById = async (req, res, next) => {
+    try {
+        const order = await Order.findById(req.params.id)
+            .populate("items.product", "name price");
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
+
+        // Check order ownership
+        if (order.user.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            order
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 module.exports = {
-    createOrder
+    createOrder,
+    getMyOrders,
+    getOrderById
 };
