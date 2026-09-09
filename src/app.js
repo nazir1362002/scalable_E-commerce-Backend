@@ -5,6 +5,7 @@ const productRoutes = require("./routes/productsRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const loggerMiddleware = require("./middleware/loggerMiddleware");
+const apiLimiter = require("./middleware/rateLimiter");
 const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -32,6 +33,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use(loggerMiddleware);
+app.use("/api", apiLimiter);
 
 // Routes
 app.use("/api/products", productRoutes);
