@@ -4,6 +4,8 @@ const cors = require("cors");
 const productRoutes = require("./routes/productsRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const loggerMiddleware = require("./middleware/loggerMiddleware");
+const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
 
@@ -29,9 +31,12 @@ app.get("/health", (req, res) => {
     });
 });
 
+app.use(loggerMiddleware);
+
 // Routes
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/orders", orderRoutes);
+app.use(errorMiddleware);
 
 module.exports = app;

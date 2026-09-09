@@ -89,15 +89,29 @@ const createOrder = async (req, res, next) => {
 };
 const getMyOrders = async (req, res, next) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const skip = (page - 1) * limit;
+
+        const totalOrders = await Order.countDocuments({
+            user: req.user.id
+        });
+
         const orders = await Order.find({
             user: req.user.id
         })
             .populate("items.product", "name price")
-            .sort("-createdAt");
+            .sort("-createdAt")
+            .skip(skip)
+            .limit(limit);
 
         res.status(200).json({
             success: true,
-            count: orders.length,
+            page,
+            limit,
+            totalOrders,
+            totalPages: Math.ceil(totalOrders / limit),
             orders
         });
 
@@ -210,14 +224,26 @@ const cancelOrder = async (req, res, next) => {
 // For the admin 
 const getAllOrders = async (req, res, next) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const skip = (page - 1) * limit;
+
+        const totalOrders = await Order.countDocuments();
+
         const orders = await Order.find()
             .populate("user", "name email")
             .populate("items.product", "name price")
-            .sort("-createdAt");
+            .sort("-createdAt")
+            .skip(skip)
+            .limit(limit);
 
         res.status(200).json({
             success: true,
-            count: orders.length,
+            page,
+            limit,
+            totalOrders,
+            totalPages: Math.ceil(totalOrders / limit),
             orders
         });
 

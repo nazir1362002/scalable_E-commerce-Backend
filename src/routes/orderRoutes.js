@@ -11,12 +11,13 @@ const {
 
 const protect = require("../middleware/authmiddleware");
 const authorize = require("../middleware/roleMiddleware")
+const validatePagination = require("../middleware/paginationMiddleware");
 
 const router = express.Router();
 
 
 router.post("/", protect, createOrder);
-router.get("/my-orders", protect, getMyOrders);
+router.get("/my-orders", protect, validatePagination, getMyOrders);
 router.patch("/:id/cancel", protect, cancelOrder);
 router.get("/:id", protect, getOrderById);
 router.patch(
@@ -29,6 +30,7 @@ router.get(
     "/",
     protect,
     authorize("admin"),
+    validatePagination,
     getAllOrders
 );
 
