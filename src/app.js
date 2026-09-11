@@ -7,6 +7,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const loggerMiddleware = require("./middleware/loggerMiddleware");
 const apiLimiter = require("./middleware/rateLimiter");
 const errorMiddleware = require("./middleware/errorMiddleware");
+const securityMiddleware = require("./middleware/securityMiddleware");
 
 const app = express();
 
@@ -22,6 +23,7 @@ const errorHandler = (err, req, res, next) => {
 
 app.use(cors());
 app.use(express.json());
+app.use(securityMiddleware);
 app.use(errorHandler);
 
 // Health check
