@@ -28,9 +28,30 @@ app.use(errorHandler);
 
 // Health check
 app.get("/health", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "E-commerce API is running"
+    const mongoose = require("mongoose");
+    const { redisClient } = require("./config/redis");
+
+    const databaseStatus =
+        mongoose.connection.readyState === 1
+            ? "connected"
+            : "disconnected";
+
+    const redisStatus =
+        redisClient.isOpen
+            ? "connected"
+            : "disconnected";
+
+    const isHealthy =
+        databaseStatus === "connected" &&
+        redisStatus === "connected";
+
+    res.status(isHealthy ? 200 : 503).json({
+        success: isHealthy,
+        status: isHealthy ? "healthy" : "unhealthy",
+        services: {
+            database: databaseStatus,
+            redis: redisStatus
+        }
     });
 });
 
@@ -38,9 +59,9 @@ app.use(loggerMiddleware);
 app.use("/api", apiLimiter);
 
 // Routes
-app.use("/api/products", productRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/orders", orderRoutes);
 app.use(errorMiddleware);
 
 module.exports = app;

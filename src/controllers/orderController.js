@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const emailQueue = require("../queues/emailQueue");
 
 const createOrder = async (req, res, next) => {
     const session = await mongoose.startSession();
@@ -72,6 +73,11 @@ const createOrder = async (req, res, next) => {
         );
 
         await session.commitTransaction();
+        // Add email job to background queue
+        await emailQueue.add("orderConfirmation", {
+            orderId: order[0]._id.toString(),
+            userId: req.user.id
+        });
 
         res.status(201).json({
             success: true,
