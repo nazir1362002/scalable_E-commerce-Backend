@@ -1,0 +1,74 @@
+/* Products.css - Classic E-Commerce */
+
+.products-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.products-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.products-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.products-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.products-filter-toolbar {
+  background-color: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 1.2fr auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.filter-item .form-input,
+.filter-item .form-select {
+  background-color: var(--surface);
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.clear-filter-item {
+  justify-content: flex-end;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 992px) {
+  .products-filter-toolbar {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
