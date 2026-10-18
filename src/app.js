@@ -4,6 +4,7 @@ const cors = require("cors");
 const productRoutes = require("./routes/productsRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
 const loggerMiddleware = require("./middleware/loggerMiddleware");
 const apiLimiter = require("./middleware/rateLimiter");
 const errorMiddleware = require("./middleware/errorMiddleware");
@@ -54,6 +55,7 @@ app.use("/api", apiLimiter);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/wishlist", wishlistRoutes);
 app.use(errorMiddleware);
 
 module.exports = app;
