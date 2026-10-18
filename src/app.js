@@ -11,23 +11,12 @@ const securityMiddleware = require("./middleware/securityMiddleware");
 
 const app = express();
 
-// Middleware
-const errorHandler = (err, req, res, next) => {
-    console.error(err);
-
-    res.status(500).json({
-        success: false,
-        message: err.message || "Internal Server Error"
-    });
-};
-
 app.use(cors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     credentials: true,
 }));
 app.use(express.json());
 app.use(securityMiddleware);
-app.use(errorHandler);
 
 // Health check
 app.get("/health", (req, res) => {
