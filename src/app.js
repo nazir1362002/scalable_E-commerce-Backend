@@ -4,7 +4,6 @@ const cors = require("cors");
 const productRoutes = require("./routes/productsRoutes");
 const authRoutes = require("./routes/authRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-const wishlistRoutes = require("./routes/wishlistRoutes");
 const loggerMiddleware = require("./middleware/loggerMiddleware");
 const apiLimiter = require("./middleware/rateLimiter");
 const errorMiddleware = require("./middleware/errorMiddleware");
@@ -12,12 +11,23 @@ const securityMiddleware = require("./middleware/securityMiddleware");
 
 const app = express();
 
+// Middleware
+const errorHandler = (err, req, res, next) => {
+    console.error(err);
+
+    res.status(500).json({
+        success: false,
+        message: err.message || "Internal Server Error"
+    });
+};
+
 app.use(cors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     credentials: true,
 }));
 app.use(express.json());
 app.use(securityMiddleware);
+app.use(errorHandler);
 
 // Health check
 app.get("/health", (req, res) => {
@@ -55,7 +65,6 @@ app.use("/api", apiLimiter);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/orders", orderRoutes);
-app.use("/api/v1/wishlist", wishlistRoutes);
 app.use(errorMiddleware);
 
 module.exports = app;
