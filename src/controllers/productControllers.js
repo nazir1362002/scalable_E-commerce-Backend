@@ -1,6 +1,6 @@
-
 const Product = require("../models/Product");
 const { redisClient } = require("../config/redis");
+const { invalidateProductListCache } = require("../utils/cache");
 const mongoose = require("mongoose");
 
 // Create product
@@ -8,14 +8,8 @@ const createProduct = async (req, res) => {
     try {
         const product = await Product.create(req.body);
 
-        // Invalidate all product list caches
-        const keys = await redisClient.keys("products:*");
-
-        if (keys.length > 0) {
-            await redisClient.del(keys);
-        }
-
-        console.log("Product cache invalidated");
+        // Invalidate all product list caches safely
+        await invalidateProductListCache();
 
         res.status(201).json({
             success: true,
@@ -37,7 +31,7 @@ const getProducts = async (req, res) => {
         // Redis Cache Key
         // -------------------------
 
-        const cacheKey = `products:${req.originalUrl} `;
+        const cacheKey = `products:list:${req.originalUrl}`;
 
         // -------------------------
         // Check Redis Cache
@@ -315,7 +309,7 @@ const updateProduct = async (req, res) => {
         }
 
         // Invalidate all product list + single-product caches
-        //await invalidateProductCache();
+        await invalidateProductListCache();
         await redisClient.del(`products:single:${id}`);
 
         res.status(200).json({
@@ -360,7 +354,7 @@ const deleteProduct = async (req, res) => {
         }
 
         // Invalidate all product list + single-product caches
-        //await invalidateProductCache();
+        await invalidateProductListCache();
         await redisClient.del(`products:single:${id}`);
 
         res.status(200).json({

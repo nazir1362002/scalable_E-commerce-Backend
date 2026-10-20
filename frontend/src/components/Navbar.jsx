@@ -63,6 +63,7 @@ export default function Navbar() {
           <nav className="navbar-nav">
             <Link to="/" className="nav-item">Home</Link>
             <Link to="/products" className="nav-item">Shop Catalog</Link>
+            {user && <Link to="/wishlist" className="nav-item" id="nav-wishlist">My Wishlist</Link>}
             {user && <Link to="/orders" className="nav-item" id="nav-orders">My Orders</Link>}
             {isAdmin && <Link to="/admin" className="nav-item admin-badge-link">Admin Dashboard</Link>}
           </nav>
@@ -122,6 +123,13 @@ export default function Navbar() {
                     <span className="dropdown-role">{user.role?.toUpperCase()}</span>
                   </div>
                   <div className="dropdown-divider" />
+                  <Link
+                    to="/wishlist"
+                    className="dropdown-link"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    My Wishlist
+                  </Link>
                   <Link
                     to="/orders"
                     className="dropdown-link"

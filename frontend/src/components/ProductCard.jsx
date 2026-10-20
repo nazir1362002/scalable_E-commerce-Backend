@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { addToWishlist } from '../api/wishlist';
 import './ProductCard.css';
 
 export default function ProductCard({ product }) {
   const { addItem, items } = useCart();
+  const { user } = useAuth();
   const [added, setAdded] = useState(false);
+  const [wishlistState, setWishlistState] = useState({ loading: false, saved: false, message: null });
 
   // Find existing cart quantity for stock check
   const inCartItem = items.find((i) => i.product._id === product._id);
@@ -16,6 +20,25 @@ export default function ProductCard({ product }) {
     addItem(product, 1);
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!user) {
+      alert('Please sign in to save items to your wishlist.');
+      return;
+    }
+
+    setWishlistState((prev) => ({ ...prev, loading: true }));
+    try {
+      await addToWishlist(product._id);
+      setWishlistState({ loading: false, saved: true, message: 'Saved to Wishlist' });
+    } catch (err) {
+      setWishlistState({
+        loading: false,
+        saved: err.message?.includes('already in your wishlist') || false,
+        message: err.message || 'Already in wishlist'
+      });
+    }
   };
 
   return (
@@ -34,6 +57,21 @@ export default function ProductCard({ product }) {
           </div>
         )}
         <span className="product-card-category-badge">{product.category}</span>
+
+        {/* Wishlist Heart Icon Button */}
+        <button
+          type="button"
+          className={`product-card-wishlist-btn ${wishlistState.saved ? 'saved' : ''}`}
+          onClick={handleWishlistToggle}
+          disabled={wishlistState.loading}
+          title={wishlistState.message || (wishlistState.saved ? 'In Wishlist' : 'Add to Wishlist')}
+          aria-label="Add to Wishlist"
+        >
+          <svg viewBox="0 0 24 24" fill={wishlistState.saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        </button>
+
         {product.stock === 0 && (
           <div className="product-card-out-of-stock">Sold Out</div>
         )}
