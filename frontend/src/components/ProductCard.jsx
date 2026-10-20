@@ -58,7 +58,7 @@ export default function ProductCard({ product }) {
         )}
         <span className="product-card-category-badge">{product.category}</span>
 
-        {/* Wishlist Heart Icon Button */}
+        {/* Wishlist Heart Icon Button on top right of product image */}
         <button
           type="button"
           className={`product-card-wishlist-btn ${wishlistState.saved ? 'saved' : ''}`}
@@ -97,20 +97,33 @@ export default function ProductCard({ product }) {
           </span>
         </div>
 
-        <button
-          className={`btn ${added ? 'btn-secondary' : 'btn-primary'} btn-sm product-card-action-btn`}
-          onClick={handleAdd}
-          disabled={product.stock === 0 || isMaxStock}
-          id={`add-to-cart-${product._id}`}
-        >
-          {added
-            ? '✓ Added to Cart'
-            : isMaxStock
-            ? 'Max Stock in Cart'
-            : product.stock === 0
-            ? 'Out of Stock'
-            : 'Add to Cart'}
-        </button>
+        {/* Action Button Row: Add to Cart + Explicit Wishlist Button */}
+        <div className="product-card-actions-row">
+          <button
+            className={`btn ${added ? 'btn-secondary' : 'btn-primary'} btn-sm product-card-action-btn`}
+            onClick={handleAdd}
+            disabled={product.stock === 0 || isMaxStock}
+            id={`add-to-cart-${product._id}`}
+          >
+            {added
+              ? '✓ Added to Cart'
+              : isMaxStock
+              ? 'Max Stock in Cart'
+              : product.stock === 0
+              ? 'Out of Stock'
+              : 'Add to Cart'}
+          </button>
+
+          <button
+            type="button"
+            className={`btn btn-secondary btn-sm product-card-explicit-wishlist-btn ${wishlistState.saved ? 'saved' : ''}`}
+            onClick={handleWishlistToggle}
+            disabled={wishlistState.loading}
+            id={`add-to-wishlist-${product._id}`}
+          >
+            {wishlistState.saved ? '♥ Wishlisted' : '♡ Wishlist'}
+          </button>
+        </div>
       </div>
     </div>
   );

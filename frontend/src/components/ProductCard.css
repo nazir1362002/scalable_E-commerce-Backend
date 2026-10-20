@@ -79,6 +79,7 @@
   cursor: pointer;
   color: #6b7280;
   transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  z-index: 2;
 }
 
 .product-card-wishlist-btn:hover {
@@ -162,6 +163,23 @@
   font-weight: 600;
 }
 
+.product-card-actions-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .product-card-action-btn {
-  width: 100%;
+  flex: 2;
+}
+
+.product-card-explicit-wishlist-btn {
+  flex: 1;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.product-card-explicit-wishlist-btn.saved {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border-color: #fca5a5;
 }
