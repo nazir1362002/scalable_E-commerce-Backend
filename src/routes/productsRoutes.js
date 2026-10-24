@@ -1,7 +1,7 @@
 const express = require("express");
 const protect = require("../middleware/authmiddleware");
 const authorize = require("../middleware/roleMiddleware");
-
+const upload = require("../middleware/uploadMiddleware");
 
 const {
     createProduct,
@@ -17,16 +17,21 @@ router.post(
     "/",
     protect,
     authorize("admin"),
+    upload.single("image"),
     createProduct
 );
+
 router.get("/", getProducts);
 router.get("/:id", getProduct);
+
 router.patch(
     "/:id",
     protect,
     authorize("admin"),
+    upload.single("image"),
     updateProduct
 );
+
 router.delete(
     "/:id",
     protect,
