@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { addToWishlist } from '../api/wishlist';
+import { getImageUrl } from '../utils/image';
 import './ProductCard.css';
 
 export default function ProductCard({ product }) {
@@ -9,6 +10,9 @@ export default function ProductCard({ product }) {
   const { user } = useAuth();
   const [added, setAdded] = useState(false);
   const [wishlistState, setWishlistState] = useState({ loading: false, saved: false, message: null });
+  const [imgError, setImgError] = useState(false);
+
+  const imageUrl = getImageUrl(product.image);
 
   // Find existing cart quantity for stock check
   const inCartItem = items.find((i) => i.product._id === product._id);
@@ -45,8 +49,13 @@ export default function ProductCard({ product }) {
     <div className="product-card">
       {/* Product Image / Placeholder */}
       <div className="product-card-image-wrapper">
-        {product.image ? (
-          <img src={product.image} alt={product.name} className="product-card-img" />
+        {imageUrl && !imgError ? (
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="product-card-img"
+            onError={() => setImgError(true)}
+          />
         ) : (
           <div className="product-card-placeholder">
             <svg className="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

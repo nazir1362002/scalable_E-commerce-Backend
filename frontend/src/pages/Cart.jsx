@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { getImageUrl } from '../utils/image';
 import EmptyState from '../components/EmptyState';
 import './Cart.css';
 
@@ -47,61 +48,65 @@ export default function Cart() {
                 </tr>
               </thead>
               <tbody>
-                {items.map(({ product, quantity }) => (
-                  <tr key={product._id}>
-                    <td>
-                      <div className="cart-product-cell">
-                        {product.image ? (
-                          <img src={product.image} alt={product.name} className="cart-thumb" />
-                        ) : (
-                          <div className="cart-thumb-placeholder">🏷️</div>
-                        )}
-                        <div>
-                          <strong className="cart-item-title">{product.name}</strong>
-                          <span className="cart-item-category-tag">{product.category}</span>
-                          <span className="cart-item-stock-notice">
-                            {product.stock} in stock
-                          </span>
+                {items.map(({ product, quantity }) => {
+                  const imageUrl = getImageUrl(product.image);
+
+                  return (
+                    <tr key={product._id}>
+                      <td>
+                        <div className="cart-product-cell">
+                          {imageUrl ? (
+                            <img src={imageUrl} alt={product.name} className="cart-thumb" />
+                          ) : (
+                            <div className="cart-thumb-placeholder">🏷️</div>
+                          )}
+                          <div>
+                            <strong className="cart-item-title">{product.name}</strong>
+                            <span className="cart-item-category-tag">{product.category}</span>
+                            <span className="cart-item-stock-notice">
+                              {product.stock} in stock
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>${Number(product.price).toFixed(2)}</td>
-                    <td>
-                      <div className="qty-control-group">
+                      </td>
+                      <td>${Number(product.price).toFixed(2)}</td>
+                      <td>
+                        <div className="qty-control-group">
+                          <button
+                            className="qty-btn"
+                            onClick={() => updateQty(product._id, quantity - 1)}
+                            id={`cart-dec-${product._id}`}
+                            aria-label="Decrease quantity"
+                          >
+                            −
+                          </button>
+                          <span className="qty-value">{quantity}</span>
+                          <button
+                            className="qty-btn"
+                            onClick={() => updateQty(product._id, Math.min(quantity + 1, product.stock))}
+                            disabled={quantity >= product.stock}
+                            id={`cart-inc-${product._id}`}
+                            aria-label="Increase quantity"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </td>
+                      <td style={{ fontWeight: '600' }}>
+                        ${(product.price * quantity).toFixed(2)}
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
                         <button
-                          className="qty-btn"
-                          onClick={() => updateQty(product._id, quantity - 1)}
-                          id={`cart-dec-${product._id}`}
-                          aria-label="Decrease quantity"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={() => removeItem(product._id)}
+                          id={`cart-remove-${product._id}`}
                         >
-                          −
+                          Remove
                         </button>
-                        <span className="qty-value">{quantity}</span>
-                        <button
-                          className="qty-btn"
-                          onClick={() => updateQty(product._id, Math.min(quantity + 1, product.stock))}
-                          disabled={quantity >= product.stock}
-                          id={`cart-inc-${product._id}`}
-                          aria-label="Increase quantity"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </td>
-                    <td style={{ fontWeight: '600' }}>
-                      ${(product.price * quantity).toFixed(2)}
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => removeItem(product._id)}
-                        id={`cart-remove-${product._id}`}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

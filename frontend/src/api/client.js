@@ -6,9 +6,10 @@ const getToken = () => localStorage.getItem('token');
 
 const request = async (path, options = {}) => {
   const token = getToken();
+  const isFormData = options.body instanceof FormData;
 
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -80,7 +81,7 @@ const request = async (path, options = {}) => {
 
 export const api = {
   get:    (path, opts)   => request(path, { method: 'GET',    ...opts }),
-  post:   (path, body)   => request(path, { method: 'POST',   body: JSON.stringify(body) }),
-  patch:  (path, body)   => request(path, { method: 'PATCH',  body: JSON.stringify(body) }),
+  post:   (path, body)   => request(path, { method: 'POST',   body: body instanceof FormData ? body : JSON.stringify(body) }),
+  patch:  (path, body)   => request(path, { method: 'PATCH',  body: body instanceof FormData ? body : JSON.stringify(body) }),
   delete: (path)         => request(path, { method: 'DELETE' }),
 };
