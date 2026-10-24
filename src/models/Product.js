@@ -33,14 +33,21 @@ const productSchema = new mongoose.Schema(
         },
 
         image: {
-            type: String,
-            default: ""
+            url: {
+                type: String,
+                default: ""
+            },
+            publicId: {
+                type: String,
+                default: ""
+            }
         }
     },
     {
         timestamps: true
     }
 );
+
 productSchema.index({ category: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ createdAt: -1 });
