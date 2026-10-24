@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getWishlist, removeFromWishlist } from '../api/wishlist';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../utils/image';
 import Spinner from '../components/Spinner';
 import EmptyState from '../components/EmptyState';
 import Alert from '../components/Alert';
@@ -74,11 +75,13 @@ export default function Wishlist() {
             const product = item.product;
             if (!product) return null;
 
+            const imageUrl = getImageUrl(product.image);
+
             return (
               <div className="wishlist-card" key={item._id}>
                 <div className="wishlist-image-wrapper">
-                  {product.image ? (
-                    <img src={product.image} alt={product.name} className="wishlist-img" />
+                  {imageUrl ? (
+                    <img src={imageUrl} alt={product.name} className="wishlist-img" />
                   ) : (
                     <div className="wishlist-placeholder">
                       <span>{product.category}</span>

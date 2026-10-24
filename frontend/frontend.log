@@ -3,15 +3,15 @@
 > vite
 
 
-  VITE v8.3.0  ready in 297 ms
+  VITE v8.3.0  ready in 312 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-7:06:30 AM [vite] http proxy error: /api/v1/products?limit=8&sort=-createdAt
+4:17:24 PM [vite] http proxy error: /api/v1/products?limit=8&sort=-createdAt
 AggregateError [ECONNREFUSED]:
     at internalConnectMultiple (node:net:1134:18)
     at afterConnectMultiple (node:net:1715:7)
-7:06:30 AM [vite] http proxy error: /api/v1/products?limit=8&sort=-createdAt
+4:17:24 PM [vite] http proxy error: /api/v1/products?limit=8&sort=-createdAt
 AggregateError [ECONNREFUSED]:
     at internalConnectMultiple (node:net:1134:18)
     at afterConnectMultiple (node:net:1715:7)

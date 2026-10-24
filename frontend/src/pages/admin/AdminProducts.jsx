@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { productsApi } from '../../api/products';
+import { getImageUrl } from '../../utils/image';
 import Spinner from '../../components/Spinner';
 import Alert from '../../components/Alert';
 import './Admin.css';
 
-const CATEGORIES = ['Electronics', 'Clothing', 'Books', 'Home', 'Sports', 'Beauty'];
+const CATEGORIES = ['Electronics', 'Clothing', 'Books', 'Home', 'Sports', 'Beauty', 'Men', 'Women'];
 
-const EMPTY_FORM = { name: '', description: '', price: '', category: '', stock: '', image: '' };
+const EMPTY_FORM = { name: '', description: '', price: '', category: '', stock: '' };
 
 const toFormValues = (product) => ({
   name: product.name || '',
@@ -14,13 +15,14 @@ const toFormValues = (product) => ({
   price: product.price ?? '',
   category: product.category || '',
   stock: product.stock ?? '',
-  image: product.image || '',
 });
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [form, setForm]         = useState(EMPTY_FORM);
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [creating, setCreating] = useState(false);
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
@@ -28,6 +30,8 @@ export default function AdminProducts() {
   // Edit modal state
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm, setEditForm]     = useState(EMPTY_FORM);
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editPreviewUrl, setEditPreviewUrl] = useState(null);
   const [saving, setSaving]         = useState(false);
   const [modalError, setModalError] = useState('');
 
@@ -50,6 +54,17 @@ export default function AdminProducts() {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setPreviewUrl(null);
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     setError('');
@@ -62,16 +77,22 @@ export default function AdminProducts() {
 
     setCreating(true);
     try {
-      await productsApi.create({
-        name: form.name.trim(),
-        description: form.description.trim(),
-        price: Number(form.price),
-        category: form.category,
-        stock: Number(form.stock),
-        image: form.image.trim() || undefined,
-      });
+      const formData = new FormData();
+      formData.append('name', form.name.trim());
+      formData.append('description', form.description.trim());
+      formData.append('price', form.price);
+      formData.append('category', form.category);
+      formData.append('stock', form.stock);
+
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      await productsApi.create(formData);
       setSuccess('Product successfully added to the catalog!');
       setForm(EMPTY_FORM);
+      setImageFile(null);
+      setPreviewUrl(null);
       loadProducts();
     } catch (err) {
       setError(err.message || 'Failed to create product.');
@@ -86,15 +107,27 @@ export default function AdminProducts() {
     setModalError('');
     setEditingProduct(product);
     setEditForm(toFormValues(product));
+    setEditImageFile(null);
+    setEditPreviewUrl(getImageUrl(product.image));
   };
 
   const closeEdit = () => {
     setEditingProduct(null);
+    setEditImageFile(null);
+    setEditPreviewUrl(null);
     setModalError('');
   };
 
   const handleEditChange = (e) => {
     setEditForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditImageFile(file);
+      setEditPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleUpdate = async (e) => {
@@ -108,14 +141,18 @@ export default function AdminProducts() {
 
     setSaving(true);
     try {
-      await productsApi.update(editingProduct._id, {
-        name: editForm.name.trim(),
-        description: editForm.description.trim(),
-        price: Number(editForm.price),
-        category: editForm.category,
-        stock: Number(editForm.stock),
-        image: editForm.image.trim(),
-      });
+      const formData = new FormData();
+      formData.append('name', editForm.name.trim());
+      formData.append('description', editForm.description.trim());
+      formData.append('price', editForm.price);
+      formData.append('category', editForm.category);
+      formData.append('stock', editForm.stock);
+
+      if (editImageFile) {
+        formData.append('image', editImageFile);
+      }
+
+      await productsApi.update(editingProduct._id, formData);
       setSuccess(`"${editForm.name.trim()}" was updated successfully.`);
       closeEdit();
       loadProducts();
@@ -247,18 +284,30 @@ export default function AdminProducts() {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="prod-image">Image URL (optional)</label>
+              <label className="form-label" htmlFor="prod-image">Product Image (optional)</label>
               <input
                 id="prod-image"
                 name="image"
-                type="url"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
                 className="form-input"
-                placeholder="https://images.example.com/product.jpg"
-                value={form.image}
-                onChange={handleChange}
+                onChange={handleImageChange}
               />
             </div>
           </div>
+
+          {previewUrl && (
+            <div style={{ marginBottom: '1rem' }}>
+              <p style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+                Selected Image Preview:
+              </p>
+              <img
+                src={previewUrl}
+                alt="Upload preview"
+                style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+              />
+            </div>
+          )}
 
           <button
             type="submit"
@@ -266,7 +315,7 @@ export default function AdminProducts() {
             disabled={creating}
             id="admin-create-product"
           >
-            {creating ? 'Saving product...' : 'Add product to store'}
+            {creating ? 'Uploading & saving product...' : 'Add product to store'}
           </button>
         </form>
       </div>
@@ -284,6 +333,7 @@ export default function AdminProducts() {
             <table className="table">
               <thead>
                 <tr>
+                  <th>Image</th>
                   <th>Product Name</th>
                   <th>Category</th>
                   <th>Price</th>
@@ -293,60 +343,88 @@ export default function AdminProducts() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => (
-                  <tr key={p._id}>
-                    <td>
-                      <strong style={{ fontSize: '0.875rem' }}>{p.name}</strong>
-                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        ID: {p._id}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        style={{
-                          backgroundColor: 'var(--bg-muted)',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: 'var(--radius-sm)',
-                          fontSize: '0.75rem',
-                          fontWeight: '600',
-                        }}
-                      >
-                        {p.category}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: '600' }}>${Number(p.price).toFixed(2)}</td>
-                    <td style={{ fontWeight: '600', color: p.stock === 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
-                      {p.stock === 0 ? 'Out of stock (0)' : p.stock}
-                    </td>
-                    <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                      {new Date(p.createdAt).toLocaleDateString()}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => openEdit(p)}
-                          id={`edit-product-${p._id}`}
+                {products.map((p) => {
+                  const imgUrl = getImageUrl(p.image);
+
+                  return (
+                    <tr key={p._id}>
+                      <td>
+                        {imgUrl ? (
+                          <img
+                            src={imgUrl}
+                            alt={p.name}
+                            style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              backgroundColor: 'var(--bg-muted)',
+                              borderRadius: 'var(--radius-sm)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '1.2rem',
+                            }}
+                          >
+                            🖼️
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <strong style={{ fontSize: '0.875rem' }}>{p.name}</strong>
+                        <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                          ID: {p._id}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          style={{
+                            backgroundColor: 'var(--bg-muted)',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: 'var(--radius-sm)',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                          }}
                         >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleDelete(p)}
-                          disabled={deletingId === p._id}
-                          id={`delete-product-${p._id}`}
-                        >
-                          {deletingId === p._id ? 'Removing...' : 'Delete'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {p.category}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: '600' }}>${Number(p.price).toFixed(2)}</td>
+                      <td style={{ fontWeight: '600', color: p.stock === 0 ? 'var(--danger)' : 'var(--text-primary)' }}>
+                        {p.stock === 0 ? 'Out of stock (0)' : p.stock}
+                      </td>
+                      <td style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                        {new Date(p.createdAt).toLocaleDateString()}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => openEdit(p)}
+                            id={`edit-product-${p._id}`}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger btn-sm"
+                            onClick={() => handleDelete(p)}
+                            disabled={deletingId === p._id}
+                            id={`delete-product-${p._id}`}
+                          >
+                            {deletingId === p._id ? 'Removing...' : 'Delete'}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {products.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
+                    <td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
                       No inventory items found. Add your first product above.
                     </td>
                   </tr>
@@ -447,24 +525,37 @@ export default function AdminProducts() {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label" htmlFor="edit-image">Image URL</label>
+                  <label className="form-label" htmlFor="edit-image">Replace Product Image</label>
                   <input
                     id="edit-image"
                     name="image"
-                    type="url"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
                     className="form-input"
-                    value={editForm.image}
-                    onChange={handleEditChange}
+                    onChange={handleEditImageChange}
                   />
                 </div>
               </div>
+
+              {editPreviewUrl && (
+                <div style={{ marginBottom: '1rem' }}>
+                  <p style={{ fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+                    Image Preview:
+                  </p>
+                  <img
+                    src={editPreviewUrl}
+                    alt="Current or new preview"
+                    style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={closeEdit} disabled={saving}>
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-accent" disabled={saving} id="admin-update-product">
-                  {saving ? 'Saving changes...' : 'Save changes'}
+                  {saving ? 'Uploading & saving changes...' : 'Save changes'}
                 </button>
               </div>
             </form>
