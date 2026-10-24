@@ -161,20 +161,27 @@ describe("Products API & Cloudinary Image Upload Tests", () => {
             expect(res.body.success).toBe(true);
         });
 
-        it("should allow admin to upload a valid product image to Cloudinary", async () => {
-            const newProduct = {
+        it("should allow admin to upload a valid product image and parse string price/stock form-data fields (201)", async () => {
+            const createdProductMock = {
                 _id: "507f1f77bcf86cd799439015",
                 name: "Camera",
                 price: 500,
                 category: "Electronics",
                 description: "DSLR Camera",
+                stock: 10,
                 image: {
                     url: "https://res.cloudinary.com/demo/image/upload/v12345/products/sample.jpg",
                     publicId: "products/sample_id_123"
                 }
             };
 
-            Product.create.mockResolvedValue(newProduct);
+            Product.create.mockImplementation(async (data) => {
+                expect(typeof data.price).toBe("number");
+                expect(typeof data.stock).toBe("number");
+                expect(data.price).toBe(500);
+                expect(data.stock).toBe(10);
+                return createdProductMock;
+            });
 
             const imageBuffer = Buffer.from("fake jpeg image binary data");
 
@@ -185,6 +192,7 @@ describe("Products API & Cloudinary Image Upload Tests", () => {
                 .field("price", "500")
                 .field("category", "Electronics")
                 .field("description", "DSLR Camera")
+                .field("stock", "10")
                 .attach("image", imageBuffer, {
                     filename: "camera.jpg",
                     contentType: "image/jpeg"
@@ -232,6 +240,7 @@ describe("Products API & Cloudinary Image Upload Tests", () => {
             const updatedProduct = {
                 _id: "507f1f77bcf86cd799439011",
                 name: "Updated Laptop",
+                price: 1200,
                 image: {
                     url: "https://res.cloudinary.com/demo/image/upload/v12345/products/sample.jpg",
                     publicId: "products/sample_id_123"
@@ -245,6 +254,7 @@ describe("Products API & Cloudinary Image Upload Tests", () => {
                 .patch("/api/v1/products/507f1f77bcf86cd799439011")
                 .set("Authorization", `Bearer ${adminToken}`)
                 .field("name", "Updated Laptop")
+                .field("price", "1200")
                 .attach("image", Buffer.from("new image binary"), {
                     filename: "new_laptop.png",
                     contentType: "image/png"

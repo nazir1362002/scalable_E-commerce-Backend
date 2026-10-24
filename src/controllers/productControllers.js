@@ -11,6 +11,14 @@ const createProduct = async (req, res, next) => {
     try {
         const productData = { ...req.body };
 
+        // Parse numerical fields from string if sent via multipart/form-data
+        if (productData.price !== undefined && productData.price !== null) {
+            productData.price = Number(productData.price);
+        }
+        if (productData.stock !== undefined && productData.stock !== null) {
+            productData.stock = Number(productData.stock);
+        }
+
         // Handle image upload if file is attached in req.file
         if (req.file) {
             uploadedImageData = await uploadToCloudinary(req.file.buffer, "products");
@@ -225,6 +233,14 @@ const updateProduct = async (req, res) => {
             if (req.body[field] !== undefined) {
                 updates[field] = req.body[field];
             }
+        }
+
+        // Parse numerical fields from string if sent via multipart/form-data
+        if (updates.price !== undefined && updates.price !== null) {
+            updates.price = Number(updates.price);
+        }
+        if (updates.stock !== undefined && updates.stock !== null) {
+            updates.stock = Number(updates.stock);
         }
 
         // Handle image replacement if a new file is uploaded
